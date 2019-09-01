@@ -39,25 +39,16 @@
                 if (this.filter) {
                     posts = posts.filter((p) => {
                         let tags = p.name.toLowerCase();
-                        let q = '?';
-                        console.log(window.location.search);
-                        if (window.location.search.indexOf('?') > -1) {
-                            if (window.location.search.indexOf('filter=') > -1) {
-                                let url = window.location.search.split('filter=')[0];
-                                window.history.pushState(null, null, url + 'filter=' + encodeURI(this.filter.toLowerCase()));
-                            } else {
-                                window.history.pushState(null, null, window.location.search + '&filter=' + encodeURI(this.filter.toLowerCase()));
-                            }
-
+                        let url = {};
+                        if (window.location.search.length > 0) {
+                            let search = window.location.search.substring(1);
+                            url = this.queryToObjs(search);
+                            url.filter = this.filter.toLowerCase();
                         } else {
-                            if (window.location.search.indexOf('filter=') > -1) {
-                                let url = window.location.search.split('filter=')[0]
-                                window.history.pushState(null, null, url + 'filter=' + encodeURI(this.filter.toLowerCase()));
-                            } else {
-                                window.history.pushState(null, null, window.location.search + '?filter=' + encodeURI(this.filter.toLowerCase()));
-                            }
+                            url.filter = this.filter.toLowerCase();
                         }
-
+                        let queryString = Object.keys(url).map(key => key + '=' + url[key]).join('&');
+                        window.history.pushState(null, null, '/?' + queryString);
                         return tags.indexOf(this.filter.toLowerCase()) !== -1;
                     })
                 }
@@ -65,10 +56,18 @@
             }
         },
         methods: {
+            queryToObjs(queryString) {
+                let query = {};
+                let pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+                for (let i = 0; i < pairs.length; i++) {
+                    let pair = pairs[i].split('=');
+                    query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+                }
+                return query;
+            },
             getShips() {
                 this.preloader = true;
                 this.axios.get('/api/starships/').then((response) => {
-                    console.log(response.data);
                     this.ships = response.data.results;
                     this.count = response.data.count;
                     this.next = response.data.next;
@@ -76,7 +75,6 @@
                     this.preloader = false;
                 }, (responce) => {
                     this.preloader = false;
-                    console.error(responce)
                 })
             },
             getShip(url) {
@@ -88,7 +86,6 @@
                 if (this.$route.query.page) {
                     this.preloader = true;
                     this.axios.get('/api/starships/?page=' + this.$route.query.page).then((response) => {
-                        console.log(response.data);
                         this.ships = response.data.results;
                         this.count = response.data.count;
                         this.next = response.data.next;
@@ -118,7 +115,6 @@
                 }
 
                 this.axios.get('/api/starships/?page=' + page).then((response) => {
-                    console.log(response.data);
                     this.ships = response.data.results;
                     this.count = response.data.count;
                     this.next = response.data.next;
@@ -138,14 +134,11 @@
                     window.history.pushState(null, null, window.location.search.split('?')[0] + '?page=' + page);
                 }
                 this.axios.get('/api/starships/?page=' + page).then((response) => {
-                    console.log(response.data);
                     this.ships = response.data.results;
                     this.count = response.data.count;
                     this.next = response.data.next;
                     this.previous = response.data.previous;
                     this.preloader = false;
-
-
                     if (this.$route.query.filter) {
                         this.filter = this.$route.query.filter
                     }
@@ -157,7 +150,6 @@
         },
         mounted() {
             this.getParams(this.$route.fullPath);
-            console.log(this.$route)
         },
         watch: {
             filter: function (val) {

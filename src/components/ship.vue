@@ -81,13 +81,11 @@
             getShip() {
                 this.preloader = true;
                 this.axios.get('/api/starships/' + this.id + '/').then((response) => {
-                    console.log(response.data);
                     this.ship = response.data;
                     if (response.data.pilots.length > 0) {
                         for (let key of response.data.pilots) {
                             let url = key.replace('https://swapi.co', '')
                             this.axios.get(url).then((response) => {
-                                console.log(response.data);
                                 this.pilots.push(response.data.name)
                             }, (responce) => {
                                 console.error(responce)
@@ -96,9 +94,8 @@
                     }
                     if (response.data.films.length > 0) {
                         for (let key of response.data.films) {
-                            let url = key.replace('https://swapi.co', '')
+                            let url = key.replace('https://swapi.co', '');
                             this.axios.get(url).then((response) => {
-                                console.log(response.data);
                                 this.films.push(response.data.title)
                             }, (responce) => {
                                 this.preloader = false;
