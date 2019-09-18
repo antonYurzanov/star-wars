@@ -78,8 +78,8 @@
                 })
             },
             getShip(url) {
-                let shipUrl = url.split('/starships/');
-                let id = shipUrl[shipUrl.length - 1].replace('/', '');
+                const idRegExp = /\/([0-9]*)\/$/;
+                let id = url.match(idRegExp)[1];
                 this.$router.push('/ship/' + id)
             },
             getParams() {
